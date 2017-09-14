@@ -1,0 +1,23 @@
+*** Settings ***
+Resource          ../../../Public/通用关键字/HTTP接口调用.txt
+Resource          ../../../Public/通用关键字/通用关键字.txt
+Library           ../../项目数据/ProjectGetParam.py
+
+*** Keywords ***
+POST接口请求
+    [Arguments]    ${expect_result}    ${api_name}    @{params}
+    comment    api_name:接口名    heads_json：post请求头    params：请求参数
+    ${head_info}    get_post_heards    ${api_name}
+    ${params_json}    To Json Param    ${api_name}    @{params}    #构建输入参数
+    ${api_url}    Get Post Url    ${api_name}    #获取访问接口URL    #${api_url}=    Run Keyword If    ${member_id} \ !=${None}
+    ...    # Set Variable    ${api_url}?memberId=${member_id}    # ELSE    Set Variable    ${api_url}    #在url接口中加入member_id测试后门
+    Comment    ${api_url}=    Run Keyword If    ${api_name} in ('pickUp','prePickUpDetail')    Set Variable    ${api_url}?mmDeviceId=867148024538653&access_token=${coupon_token}
+    ...    ELSE    Set Variable    ${api_url}    #在url接口中加入member_id测试后门
+    ${head_info_new}=    Run Keyword If    ${login_json} !=${None}    接口请求.更新头部信息    ${head_info}    ${login_json}
+    ...    ELSE    Set Variable    ${head_info}    #    Set Variable    ${api_url}
+    ...    # ${api_url}?${member_id}    #    ${new_api_url}=    Run Keyword If    '${api_name}' in ( 'pickUp','prePickUpDetail')    Set Variable
+    ...    # ${api_url}?mmDeviceId=867148024538653&access_token=${cp_token}    # ELSE    Set Variable    ${api_url}
+    ${param_json_new}=    Run Keyword If    ${params_json} !=${None}    Map To Sign    ${params_json}
+    ...    ELSE    Set Variable    ${params_json}
+    HTTP_POST请求调用    ${api_url}    ${head_info_new}    ${param_json_new}
+    结果断言    ${http_post_result}    ${expect_result}

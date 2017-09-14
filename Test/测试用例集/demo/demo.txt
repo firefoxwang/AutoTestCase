@@ -1,0 +1,29 @@
+*** Settings ***
+Suite Setup
+Suite Teardown
+Resource          ../../项目关键字/http关键字/接口请求.txt
+Library           ../../../Public/publiclibary/Generate_machine.py
+Resource          ../../项目关键字/http关键字/业务关键字.txt
+Resource          ../../../Public/通用关键字/MQ消息发送.txt
+Resource          ../../../Public/通用关键字/通用关键字.txt
+
+*** Test Cases ***
+插入订单信息
+    #插入一条状态为1051的订单信息
+    insert_order    109799_7696    ${orderNo}    ${orderNo}    ${memberid}    2000    ${phone}
+    ...    6
+
+插入会员数据
+    insert_user    ${memberid}    ${phone}    ${name}
+
+插入用户图像
+    inster_user_image    ${name}    ${memberid}    ${id_card}
+
+发送MQ消息
+    log    {"applyImageVoList":[{"saveLocation":"2001_X6966O91-T0LLUO3RQDMH4DSGFD0S1-T9RE8P3J-0.jpg","saveType":0,"type":"1001"},{"saveLocation":"2001_X6966O91-T0LL6B12TIO1I28V12I73-OX2F8P3J-0.jpg","saveType":0,"type":"1002"},{"saveLocation":"2001_X6966O91-11LLVBQNQNXB8BALRERT1-BCZP8P3J-0.jpg","saveType":0,"type":"1004"},{"saveLocation":"2001_X6966O91-11LLBU0NR5UZOGN3HUBX1-ZA4Q8P3J-0.jpg","saveType":0,"type":"1010"}],"applyNo":"${orderNo}","capitalNo":"027","memberId":${memberid},"merchandiseVo":{"alliesCode":"${alliesCode}","mchCity":"北京市","mchClCategoryId":"1","mchId":"${merchantid}","mchIndustryType":"${merchant_industry_type}","mchName":"微信端测试","merchandiseId":"${merchandiseid}","merchandiseName":"微信测试商品","storeAddress":"北京市北京市东城区中关村","storeCity":"北京市","storeId":"8151","storeName":"微信端测试","storeProvince":"北京市","subItemId":"${merchandiseid}","subItemName":"微信测试商品"},"orderVo":{"amt":${amount },"applyDate":"2017-07-01 10:33:36","approvalDate":"2017-07-03 10:37:39","apr":${apr},"bankAccountName":"上海米么金融信息服务有限公司","bankAccountNo":"654321","bankBranchName":"上海分行","bankBranchUnionNum":"308290003263","bankCity":"上海市","bankName":"中国工商银行股份有限公司上海分行民生支行","bankMainName":"工商银行","bankProvince":"上海市","bankSubName":"民生支行","bankUnionNum":"","contractId":"50bb01c1153ed9f9c92d1c534ec981ef","cpnUsed":false,"extOrderInfo":"{\"province\":\"上海市\",\"caAuditedDateTime\":\"2017-07-03 10:35:45\",\"applyAmt\":${amount }}","feeApr":${p_loan_fee_apr},"periods":${periods_day},"repayMethod":"554","source":0},"userVo":{"applyChannel":"0","certAddress":"江苏省南京市江宁区碧水湾","certId":"${id_card}","certName":"${name}","certType":"1","company":"米么","contactName":"姜总","contactPhone":"15861815123","deduct":false,"education":"4","industry":"41","ip":"116.228.236.198","ipCity":"上海市","latitude":"31.24683697104955","longitude":"121.5764803153802","phone":"${phone}","phoneCity":"南京","rating":"D","sex":1,"student":false}}
+    MQ消息发送    {}    TP_MIME_UNION_FUND_ALIUAT    TAG_wallet-core_capital_apply    {"applyImageVoList":[{"saveLocation":"2001_X6966O91-T0LLUO3RQDMH4DSGFD0S1-T9RE8P3J-0.jpg","saveType":0,"type":"1001"},{"saveLocation":"2001_X6966O91-T0LL6B12TIO1I28V12I73-OX2F8P3J-0.jpg","saveType":0,"type":"1002"},{"saveLocation":"2001_X6966O91-11LLVBQNQNXB8BALRERT1-BCZP8P3J-0.jpg","saveType":0,"type":"1004"},{"saveLocation":"2001_X6966O91-11LLBU0NR5UZOGN3HUBX1-ZA4Q8P3J-0.jpg","saveType":0,"type":"1010"}],"applyNo":"${orderNo}","capitalNo":"023","memberId":${memberid},"merchandiseVo":{"alliesCode":"${alliesCode}","mchCity":"北京市","mchClCategoryId":"1","mchId":"${merchantid}","mchIndustryType":"${merchant_industry_type}","mchName":"微信端测试","merchandiseId":"${merchandiseid}","merchandiseName":"微信测试商品","storeAddress":"北京市北京市东城区中关村","storeCity":"北京市","storeId":"8151","storeName":"微信端测试","storeProvince":"北京市","subItemId":"${merchandiseid}","subItemName":"微信测试商品"},"orderVo":{"amt":${amount },"applyDate":"2017-07-01 10:33:36","approvalDate":"2017-07-03 10:37:39","apr":${apr},"bankAccountName":"上海米么金融信息服务有限公司","bankAccountNo":"654321","bankBranchName":"上海分行","bankBranchUnionNum":"308290003263","bankCity":"上海市","bankName":"中国工商银行股份有限公司上海分行民生支行","bankMainName":"工商银行","bankProvince":"上海市","bankSubName":"民生支行","bankUnionNum":"","contractId":"50bb01c1153ed9f9c92d1c534ec981ef","cpnUsed":0,"extOrderInfo":"{\\"province\\":\\"上海市\\",\\"caAuditedDateTime\\":\\"2017-07-03 10:35:45\\",\\"applyAmt\\":${amount }}","feeApr":${p_loan_fee_apr},"periods":${periods_day},"repayMethod":"554","source":0},"userVo":{"applyChannel":"0","certAddress":"江苏省南京市江宁区碧水湾","certId":"${id_card}","certName":"${name}","certType":"1","company":"米么","contactName":"姜总","contactPhone":"15861815123","deduct":0,"education":"4","industry":"41","ip":"116.228.236.198","ipCity":"上海市","latitude":"31.24683697104955","longitude":"121.5764803153802","phone":"${phone}","phoneCity":"南京","rating":"D","sex":1,"student":0}}
+    log    "applyNo":"${orderNo}"
+    log    "phone":"${phone}"
+
+demo
+    test

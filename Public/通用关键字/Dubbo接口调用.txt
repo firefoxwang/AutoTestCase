@@ -1,0 +1,33 @@
+*** Settings ***
+Resource          通用关键字.txt
+Library           Remote    99.48.66.224:8270
+
+*** Keywords ***
+Dubbo接口调用
+    [Arguments]    ${class_name}    ${method_name}    ${parameter_types}    ${dubbo_version}    @{args}
+    [Documentation]    zookeeper://99.48.66.13:2181 zookeeper://192.168.10.6:2181
+    #    ${result}    Dubbo接口调用    ${dubbo_api}    ${api_name}    @{params}
+    ${zookerpath}=    Set Variable    zookeeper://99.48.66.13:2181    #    zookeeper://99.48.66.13:2181    zookeeper://192.168.10.6:2181
+    #    ${class_name}    ${method_name}    ${dubbo_version}    ${parameter_types}    Get Dubbo Method    ${api_name}
+    Connect To Dubbo Register    ${zookerpath}    #注册中心
+    ${result}    Call Dubbo Interface Method    ${class_name}    ${method_name}    ${parameter_types}    ${dubbo_version}    @{args}
+    Set Suite Variable    ${dubbo_result}    ${result}
+
+Dubbo接口调用loan
+    [Arguments]    ${class_name}    ${method_name}    ${parameter_types}    ${dubbo_version}    @{args}
+    #    ${result}    Dubbo接口调用    ${dubbo_api}    ${api_name}    @{params}
+    ${zookerpath}=    Set Variable    zookeeper://99.48.66.13:2181    #    zookeeper://99.48.66.13:2181    zookeeper://192.168.10.6:2181    zookeeper://99.48.46.199:2181
+    #    ${class_name}    ${method_name}    ${dubbo_version}    ${parameter_types}    Get Dubbo Method    ${api_name}
+    Connect To Dubbo Register    ${zookerpath}    #注册中心
+    ${result}    Call Dubbo Interface Method    ${class_name}    ${method_name}    ${parameter_types}    ${dubbo_version}    @{args}
+    Set Suite Variable    ${dubbo_result}    ${result}
+
+Dubbo new
+    [Arguments]    ${class_name}    ${method_name}    ${parameter_types}    ${dubbo_version}    ${url}    @{args}
+    #    ${result}    Dubbo接口调用    ${dubbo_api}    ${api_name}    @{params}
+    ${zookerpath}=    Set Variable    zookeeper://99.48.66.13:2181    #    zookeeper://99.48.66.13:2181    zookeeper://192.168.10.6:2181    zookeeper://99.48.46.199:2181
+    #    ${class_name}    ${method_name}    ${dubbo_version}    ${parameter_types}    Get Dubbo Method    ${api_name}
+    Connect To Dubbo Register    ${zookerpath}    #注册中心
+    ${result}    call_dubbo_interface_method_direct    ${url}    ${class_name}    ${method_name}    ${parameter_types}    ${dubbo_version}
+    ...    @{args}
+    Set Suite Variable    ${dubbo_result}    ${result}

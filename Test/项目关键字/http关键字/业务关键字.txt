@@ -1,0 +1,55 @@
+*** Settings ***
+Resource          ../../../Public/通用关键字/通用关键字.txt
+Library           ../../../Public/publiclibary/Generate_machine.py
+
+*** Keywords ***
+前置数据
+    ${a}    auto_machine    ${ENV}
+    ${memberid}    getfrom dictionary    ${a}    member_id
+    ${phone}    getfrom dictionary    ${a}    phone
+    ${id_card}    getfrom dictionary    ${a}    id_card
+    ${appl_no}    getfrom dictionary    ${a}    appl_no
+    ${oder_no_merchandise }    getfrom dictionary    ${a}    oder_no_merchandise
+    ${orderNo}    getfrom dictionary    ${a}    orderNo
+    ${name}    getfrom dictionary    ${a}    name
+    setsuitevariable    ${memberid}    ${memberid}
+    setsuitevariable    ${phone}    ${phone}
+    setsuitevariable    ${id_card}    ${id_card}
+    setsuitevariable    ${appl_no}    ${appl_no}
+    setsuitevariable    ${orderNo}    ${orderNo}
+    setsuitevariable    ${name}    ${name}
+    setsuitevariable    ${alliesCode}    109799_7696
+    setsuitevariable    ${amount }    2000
+    setsuitevariable    ${periods }    6
+    setsuitevariable    ${periods_day}    180
+    获取商户信息    ${alliesCode}    ${periods }
+
+删除数据
+    数据库操作    user    DELETE from CRM.[MEMBER] where MEMBER_ID = '${memberid}'
+    数据库操作    user    DELETE from crm.CONTACT_VALIDATE_LOG where MEMBER_ID = '${memberid}'
+    数据库操作    user    DELETE from crm.JXL_VALIDATE_LOG where MEMBER_ID = '${memberid}'
+    数据库操作    user    delete from crm.MEMBER_IMAGE_log where MEMBER_ID = \ '${memberid}' \
+    数据库操作    user    delete from crm.FACE_VALIDATE_LOG where MEMBER_ID ='${memberid}' \
+    数据库操作    user    delete from crm.ID_CARD where MEMBER_ID = '${memberid}';
+    数据库操作    user    delete from crm.MEMBER_IMAGE where MEMBER_ID = '${memberid}';
+    #删除插入的钱包数据
+    数据库操作    wallet    DELETE FROM apply_info WHERE cellphone =${phone}
+    数据库操作    wallet    SET FOREIGN_KEY_CHECKS = 0
+    数据库操作    wallet    DELETE FROM money_box_order WHERE mobile ='${phone}'
+    #删除生成的账务数据
+
+获取商户信息
+    [Arguments]    ${allies_code}    ${periods}    # 输入alliescode跟期数
+    ${a}    get_merchandiseinfo    ${allies_code}    ${periods}
+    ${merchantid}    getfrom dictionary    ${a}    merchantid
+    ${merchant_industry_type}    getfrom dictionary    ${a}    merchant_industry_type
+    ${apr}    getfrom dictionary    ${a}    apr
+    ${p_loan_fee_apr}    getfrom dictionary    ${a}    p_loan_fee_apr
+    ${shopid}    getfrom dictionary    ${a}    shopid
+    ${merchandiseid}    getfrom dictionary    ${a}    merchandiseid
+    setsuitevariable    ${merchantid}    ${merchantid}
+    setsuitevariable    ${merchant_industry_type}    ${merchant_industry_type}
+    setsuitevariable    ${apr}    ${apr}
+    setsuitevariable    ${p_loan_fee_apr}    ${p_loan_fee_apr}
+    setsuitevariable    ${shopid}    ${shopid}
+    setsuitevariable    ${merchandiseid}    ${merchandiseid}

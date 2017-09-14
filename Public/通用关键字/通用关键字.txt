@@ -1,0 +1,101 @@
+*** Settings ***
+Library           ../Libary/CommonLib/HttpClient.py
+Library           ../Libary/CommonLib/JsonValue.py
+Library           ../Libary/CommonLib/SSHClient.py
+Library           ../publiclibary/DB_Operation.py
+Library           ../publiclibary/Delet_Data.py
+Library           ../publiclibary/ActualResultManage.py
+Library           ../publiclibary/redis_data.py
+Library           ../Libary/NegociosLib/COMMON/check_if_loans_created.py
+Library           Remote    99.48.66.224:8270
+Library           Collections
+
+*** Variables ***
+${ENV}            sit    # 数据库环境选择，[sit,aliuat]二选一，默认sit
+
+*** Keywords ***
+结果断言
+    [Arguments]    ${actual_expect}    ${expect_result}
+    [Documentation]    结果断言：期望结果与实际结果比较
+    comment    ${prevResp}：保存的返回结果    ${expect_result}：期望结果
+    comment    结果比较，可以指定具体的值
+    Assert Equal Json    ${actual_expect}    ${expect_result}
+
+数据库操作
+    [Arguments]    ${db_type}    ${sql_info}
+    ${DB_RESULT}    DeUplinfo By Sql    ${db_type}    ${sql_info}    ${ENV}    #数据库环境选择 ，通过${ENV}变量控制，[sit,aliuat]二选一，不填默认sit
+    Set Suite Variable    ${dbresult}    ${DB_RESULT}
+
+前置数据构建
+    [Arguments]    ${table_names}    ${columns}=None
+    comment    此关键字可以放置到 HTTP 关键字 或者Dubbo关键字下 定义 ，定义完成后 直接数据集调用
+    #    ${names}=    Create List    user_CRM.MEMBER    user_CRM.MEMBER_WECHAT    wallet_money_box    # 定义需要插入的表 （格式：库_表名称）
+    #    ${columon}=    Create List    expired_date \ = 2016-10-10    #指定需要插入字段的值，若不指定全部动态生成
+    #    Isnert Tables    ${table_names}    ${columns}
+    #    Isnert Tables    user_CRM.MEMBER_WECHAT,user_CRM.MEMBER,wallet_money_box    expired_date \ = 2016-10-10
+    ${TS}    Isnert Tables    ${table_names}    ${columns}    ${ENV}
+    Set Global Variable    ${TS_PROJECT}    ${TS}
+
+获取手机验证码
+    [Arguments]    ${phone}
+    数据库操作    wallet    select \ content \ from me_notification.SMS_HISTORY WHERE phoneNo='${phone}' order by id desc limit 1
+    log    select \ content \ from me_notification.SMS_HISTORY WHERE phoneNo='${phone}' order by id desc limit 1
+    Comment    ${code}    Evaluate    ${dbresult[0][0].split(":")[1].split("。")[0]}
+    Set Suite Variable    ${verfycode}    ${dbresult[0][0].split(":")[1].split("。")[0]}
+
+获取中间值
+    [Arguments]    ${key_value}
+    ${value}    Get From Dictionary    ${dubbo_result}    ${key_value}
+    Set Suite Variable    ${middle_result}    ${value}
+
+删除用户信息
+    [Arguments]    ${member_id}    ${loan_id}=${None}
+    comment    删除user 表中的用户信息
+    Delet_Data.Delete Data    ${member_id}    ${loan_id}    ${ENV}    #数据库环境选择 ，通过${ENV}变量控制，[sit,aliuat]二选一，不填默认sit
+
+数据加密
+    [Arguments]    ${pwd}
+    ${content_value}    Get From Dictionary    ${http_post_result}    content
+    ${content_value}    evaluate    ${content_value}
+    ${key_value}    Get From Dictionary    ${content_value}    publicKey
+    ${key_flag}    Get From Dictionary    ${content_value}    keyFlag
+    log    ${pwd}
+    ${password}    ActualResultManage.Split Equal Value    ${pwd}
+    ${encrypt_data}    Encrypt Public Key    ${password}    ${key_value}
+    [Return]    ${encrypt_data}    ${key_flag}
+
+创建贷款
+    ${CL}    Auto Create Loan    {"merchant_id": "100715", "store_id": "14","product_id": "13", "amount": 20000,"alliesCode":"ZKZHIXIANG","PROGRAM_CODE":"ZKZHIXIANG_T6_CARLOAN", "repayment_type": "554","repayment_periods": 6, "product_name": "宿迁中科志翔", "PRODUCT": "CARLOAN"}    {"loan_status": 50, "is_overdue": 1, "overdue_day": 0}
+    LOG    ${CL.member_id}
+    LOG    ${CL.apply_no}
+    setsuitevariable    ${memberid}    ${CL.member_id}
+    setsuitevariable    ${apply_no}    ${CL.apply_no}
+
+更新头部信息
+    [Arguments]    ${heads_json}    ${token}
+    ${head_dict}=    Run Keyword If    '${token}' ==' None'    Set Variable    ${heads_json}
+    ...    ELSE    Set To Dictionary    ${heads_json}    mmTicket    ${token}
+    Set Global Variable    ${head_dict}    ${head_dict}
+
+redis数据清除
+    [Arguments]    ${pro_type}    ${db}    ${redis_key}
+    del_redis_data    ${pro_type}    ${db}    ${redis_key}
+
+获取当前时间
+    [Arguments]    ${datestr}    ${day_info}    ${strformat}
+    [Documentation]    olnew_date
+    ${date_now}    date_new    ${None}    ${day_info}    ${strformat}
+    Set Suite Variable    ${middle_date_now}    ${date_now}
+
+检查贷款是否生成
+    [Arguments]    ${loan_id}    ${sleep_time}
+    ${sql_info}=    set Variable    SELECT COUNT(1) FROM FSS_LOANS WHERE LOAN_ID = '${loan_id}'
+    ${actual_expect}=    check_if_loans_created    loan_new    ${sql_info}    sleep_time=${sleep_time}    env=${ENV}
+    Should Be Equal    ${actual_expect}    0
+
+登录远程服务器执行shell操作
+    [Arguments]    ${server_type}    ${command}
+    [Documentation]    登录到远程服务器执行指定的命令，入参是命令字符串，返回是执行结果list
+    ...    :param server_type: 需要操作的服务器归属哪个系统，对应PublicData文件中server_connects中配置 :param command: 要执行的命令，多条命令可使用英文分号; 分隔
+    ${result}    SSHClient    ${server_type}    ${command}
+    Set Suite Variable    ${ssh_result}    ${result}

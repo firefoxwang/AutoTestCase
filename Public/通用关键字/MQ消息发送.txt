@@ -1,0 +1,12 @@
+*** Settings ***
+Library           ../Libary/CommonLib/MeMqLib.py
+Resource          通用关键字.txt
+
+*** Keywords ***
+MQ消息发送
+    [Arguments]    ${expect_result}    ${topic}    ${tag}    ${msg}
+    #    ${msg_json}    evaluate    ${msg}
+    ${response_object_str}    send_message    ${topic}    ${tag}    ${msg}
+    ${response_object}    evaluate    ${response_object_str}
+    Set Suite Variable    ${mq_result}    ${response_object}
+    结果断言    ${mq_result}    ${expect_result}

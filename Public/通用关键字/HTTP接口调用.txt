@@ -1,0 +1,18 @@
+*** Settings ***
+Library           ../Libary/CommonLib/HttpClient.py
+
+*** Keywords ***
+HTTP_POST请求调用
+    [Arguments]    ${api_url}    ${heads_json}    ${param_json_new}
+    ${respon_object}    HTTP POST    ${api_url}    ${heads_json}    ${param_json_new}
+    ${respon_info}    to json data    ${respon_object}
+    comment    保存返回数据
+    Set Suite Variable    ${http_post_result}    ${respon_info}
+
+HTTP_GET请求调用
+    [Arguments]    ${api_url}    ${heads_json}    ${param_json_new}
+    ${respon_object}    HTTP GET    ${api_url}    ${heads_json}    ${param_json_new}
+    ${respon_info}    to json data    ${respon_object}
+    ${respon_}    To Content Data    ${respon_object}
+    comment    保存返回数据
+    Set Suite Variable    ${http_get_result}    ${respon_}
